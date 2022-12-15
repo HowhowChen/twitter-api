@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
   PrivateChat.init(
     {
       senderId: DataTypes.INTEGER,
-      receiverId: DataTypes.INTEGER
+      receiverId: DataTypes.INTEGER,
+      isRead: DataTypes.BOOLEAN
     },
     {
       sequelize,

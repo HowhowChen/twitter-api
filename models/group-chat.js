@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       UserId: DataTypes.INTEGER,
       RoomId: DataTypes.INTEGER,
-      content: DataTypes.BOOLEAN
+      content: DataTypes.TEXT
     },
     {
       sequelize,
