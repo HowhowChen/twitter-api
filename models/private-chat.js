@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       senderId: DataTypes.INTEGER,
       receiverId: DataTypes.INTEGER,
+      content: DataTypes.TEXT,
       isRead: DataTypes.BOOLEAN
     },
     {
