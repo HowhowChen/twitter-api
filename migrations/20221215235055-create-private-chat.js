@@ -18,6 +18,10 @@ module.exports = {
       content: {
         type: Sequelize.TEXT
       },
+      isRead: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
