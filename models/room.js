@@ -4,9 +4,8 @@ const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
   class Room extends Model {
     static associate (models) {
-    //   Room.hasMany(models.Reply, { foreignKey: 'TweetId' })
-    //   Room.hasMany(models.Like, { foreignKey: 'TweetId' })
-    //   Room.belongsTo(models.User, { foreignKey: 'UserId' })
+      Room.hasMany(models.UserRoom, { foreignKey: 'RoomId' })
+      Room.hasMany(models.GroupChat, { foreignKey: 'RoomId' })
     }
   }
   Room.init(
