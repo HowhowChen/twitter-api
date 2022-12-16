@@ -18,12 +18,12 @@ module.exports = (sequelize, DataTypes) => {
         as: 'Followings'
       })
       User.belongsToMany(models.User, {
-        through: models.Privatechat,
+        through: models.PrivateChat,
         foreignKey: 'senderId',
         as: 'Receivers'
       })
       User.belongsToMany(models.User, {
-        through: models.Privatechat,
+        through: models.PrivateChat,
         foreignKey: 'receiverId',
         as: 'Senders'
       })
