@@ -18,7 +18,7 @@ module.exports = {
             userIdInRoom.push(i)
           }
         })
-      } while (userIdInRoom.length < 2)
+      } while (userIdInRoom.length < 3)
       userRooms.push(
         ...Array.from({ length: userIdInRoom.length }, (_, i) => ({
           UserId: users[userIdInRoom[i]].id,
