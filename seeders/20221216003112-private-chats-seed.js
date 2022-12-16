@@ -16,6 +16,7 @@ module.exports = {
               senderId: sender.id,
               receiverId: receiver.id,
               content: faker.lorem.sentences(1),
+              isRead: false,
               createdAt: new Date(),
               updatedAt: new Date()
             }))
