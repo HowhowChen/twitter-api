@@ -16,8 +16,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'Privatechat',
-      tableName: 'Privatechats'
+      modelName: 'PrivateChat',
+      tableName: 'PrivateChats'
     }
   )
   return PrivateChat
