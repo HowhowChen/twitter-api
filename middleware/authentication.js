@@ -42,11 +42,11 @@ const authenticatedCurrentUser = (req, res, next) => {
 // socket user authenticated
 const authenticatedSocket = (socket, next) => {
   try {
-    const token = socket.handshake.headers.token || socket.handshake.auth.token
-    if (!token) throw new Error('socket驗證錯誤!')
+    const token = socket.handshake.headers.auth || socket.handshake.auth.token
+    if (!token) return next(new Error('socket驗證錯誤!'))
 
     jwt.verify(token, process.env.JWT_SECRET, async function (err, decoded) {
-      if (err) throw new Error('socket驗證錯誤!')
+      if (err) return next(new Error('socket驗證錯誤!'))
 
       socket.user = await User.findByPk(decoded.id, {
         raw: true,
