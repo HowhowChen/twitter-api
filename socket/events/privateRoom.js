@@ -1,5 +1,8 @@
 const messageController = require('../../controllers/message.controller')
 
 module.exports = (io, socket) => {
-  console.log(123)
+  socket.on('message', data => {
+    console.log(data)
+    socket.emit('message', data)
+  })
 }
