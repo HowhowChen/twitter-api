@@ -1,4 +1,5 @@
 const { authenticatedSocket } = require('../middleware/authentication')
+const privateRoom = require('./events/privateRoom')
 
 module.exports = io => {
   /* 監聽連線狀態 */
@@ -8,5 +9,6 @@ module.exports = io => {
     console.log(
       ` ${user.name} connected and number of connections ${clientsCount}`
     )
+    privateRoom(io, socket)
   })
 }
