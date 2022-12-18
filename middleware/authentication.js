@@ -1,5 +1,7 @@
 const passport = require('../config/passport')
+const jwt = require('jsonwebtoken')
 const helpers = require('../_helpers')
+const { User } = require('../models')
 
 //  everyone authenticated
 const authenticated = (req, res, next) => {
@@ -37,9 +39,30 @@ const authenticatedCurrentUser = (req, res, next) => {
   })
 }
 
+// socket user authenticated
+const authenticatedSocket = (socket, next) => {
+  try {
+    const token = socket.handshake.headers.auth || socket.handshake.auth.token
+    if (!token) return next(new Error('socket驗證錯誤!'))
+
+    jwt.verify(token, process.env.JWT_SECRET, async function (err, decoded) {
+      if (err) return next(new Error('socket驗證錯誤!'))
+
+      socket.user = await User.findByPk(decoded.id, {
+        raw: true,
+        attributes: ['id', 'name', 'account', 'avatar']
+      })
+      next()
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
 module.exports = {
   authenticated,
   authenticatedAdmin,
   authenticatedUser,
-  authenticatedCurrentUser
+  authenticatedCurrentUser,
+  authenticatedSocket
 }
