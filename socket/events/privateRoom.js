@@ -1,15 +1,16 @@
 const messageController = require('../../controllers/message.controller')
 
 module.exports = (io, socket) => {
-  //  一進單人聊天室就讀取歷史訊息
+  //  一進單人聊天室就讀取歷史訊息及加入roomId
   socket.on('getPrivateMessage', async data => {
     try {
       const { receicerId } = data
       const senderId = socket.user.id
 
+      socket.join(5)
       //  回傳一個陣列， 讀取訊息在[1]
       const privateMessage = await Promise.all([
-        messageController.putPrivateMessageStatus(senderId, receicerId),
+        messageController.putPrivateMessageStatus(senderId, receicerId), // 已讀所有訊息
         messageController.getPrivateMessages(senderId, receicerId)
       ])
 
@@ -27,7 +28,7 @@ module.exports = (io, socket) => {
 
       const postPrivateMessage = await messageController.postPrivateMessage(senderId, receicerId, content)
 
-      socket.emit('getPrivateMessage', postPrivateMessage)
+      socket.to(5).emit('postPrivateMessage', postPrivateMessage)
     } catch (err) {
       socket.on('error', err)
     }
@@ -48,5 +49,10 @@ module.exports = (io, socket) => {
     } catch (err) {
       socket.on('error', err)
     }
+  })
+
+  //  離開聊天室，斷開socket房間連線
+  socket.on('leaveRoom', async data => {
+    socket.leave(5)
   })
 }
