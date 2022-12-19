@@ -58,6 +58,8 @@ const messageController = {
     return await PrivateChat.findOne({
       attributes: [
         'senderId', 'receiverId', 'content', 'isRead', 'createdAt',
+        [sequelize.literal(`(SELECT account FROM Users WHERE id = ${receiverId})`), 'account'],
+        [sequelize.literal(`(SELECT avatar FROM Users WHERE id = ${receiverId})`), 'avatar'],
         [sequelize.literal(`(SELECT COUNT(*) FROM PrivateChats WHERE senderId = ${receiverId} AND receiverId = ${senderId} AND isRead = false)`), 'unReadCount']
       ],
       where: {
@@ -86,7 +88,7 @@ const messageController = {
       },
       raw: true,
       nest: true,
-      order: [['createdAt', 'DESC']]
+      order: [['id', 'DESC']]
     })
   }
 }

@@ -1,20 +1,44 @@
 const messageController = require('../../controllers/message.controller')
+const { simplifyMessageTime, detailMessageTime, messageNowDay, nowDay } = require('../../helpers/date-helper')
+const crypto = require('crypto')
 
 module.exports = (io, socket) => {
   //  一進單人聊天室就讀取歷史訊息及加入roomId
   socket.on('getPrivateMessage', async data => {
     try {
-      const { receicerId } = data
+      const { receiverId, account } = data
       const senderId = socket.user.id
 
-      socket.join(5)
+      // 建立rooId，做雜湊確保roomId不重複
+      const senderAccount = socket.user.account
+      const name = [account, senderAccount]
+      name.sort()
+      const roomId = crypto.createHash('md5').update(name[0] + name[1]).digest('hex')
+      socket.join(roomId)
+
       //  回傳一個陣列， 讀取訊息在[1]
       const privateMessage = await Promise.all([
-        messageController.putPrivateMessageStatus(senderId, receicerId), // 已讀所有訊息
-        messageController.getPrivateMessages(senderId, receicerId)
+        messageController.putPrivateMessageStatus(senderId, receiverId), // 已讀所有訊息
+        messageController.getPrivateMessages(senderId, receiverId)
       ])
 
-      socket.emit('getPrivateMessage', privateMessage[1])
+      //  message時間轉換
+      const newPrivateMessage = privateMessage[1].map(message => {
+        switch (messageNowDay(message.createdAt)) {
+          case nowDay():
+            return {
+              ...message,
+              createdAt: simplifyMessageTime(message.createdAt)
+            }
+          default:
+            return {
+              ...message,
+              createdAt: detailMessageTime(message.createdAt)
+            }
+        }
+      })
+
+      socket.emit('getPrivateMessage', newPrivateMessage)
     } catch (err) {
       socket.on('error', err)
     }
@@ -23,12 +47,19 @@ module.exports = (io, socket) => {
   //  點擊送出訊息，存進資料庫，回傳新增訊息給前端appendChild
   socket.on('postPrivateMessage', async data => {
     try {
-      const { receicerId, content } = data
+      const { receiverId, account, content } = data
       const senderId = socket.user.id
 
-      const postPrivateMessage = await messageController.postPrivateMessage(senderId, receicerId, content)
+      // 建立rooId，做雜湊確保roomId不重複
+      const senderAccount = socket.user.account
+      const name = [account, senderAccount]
+      name.sort()
+      const roomId = crypto.createHash('md5').update(name[0] + name[1]).digest('hex')
 
-      socket.to(5).emit('postPrivateMessage', postPrivateMessage)
+      const postPrivateMessage = await messageController.postPrivateMessage(senderId, receiverId, content)
+
+      io.in(roomId).emit('postPrivateMessage', postPrivateMessage)
+      io.emit('privateMessageNotify', 'ture')
     } catch (err) {
       socket.on('error', err)
     }
@@ -37,12 +68,12 @@ module.exports = (io, socket) => {
   //  列表讀取最後一筆訊息及未讀數量
   socket.on('privateMessageList', async data => {
     try {
-      const receicerIdList = data
+      const receiverIdList = data
       const senderId = socket.user.id
 
       //  列表讀取最後一筆訊息及未讀數量
-      const privateMessageList = await Promise.all(receicerIdList.map(async receicerId => (
-        await messageController.getPrivateUnreadMessageCount(senderId, receicerId.receicerId)
+      const privateMessageList = await Promise.all(receiverIdList.map(async receiverId => (
+        await messageController.getPrivateUnreadMessageCount(senderId, receiverId.receiverId)
       )))
 
       socket.emit('privateMessageList', privateMessageList)
@@ -53,6 +84,12 @@ module.exports = (io, socket) => {
 
   //  離開聊天室，斷開socket房間連線
   socket.on('leaveRoom', async data => {
-    socket.leave(5)
+    // 建立rooId，做雜湊確保roomId不重複
+    const { account } = data
+    const senderAccount = socket.user.account
+    const name = [account, senderAccount]
+    name.sort()
+    const roomId = crypto.createHash('md5').update(name[0] + name[1]).digest('hex')
+    socket.leave(roomId)
   })
 }
