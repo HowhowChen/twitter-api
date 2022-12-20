@@ -1,5 +1,5 @@
 const messageController = require('../../controllers/message.controller')
-const { simplifyMessageTime, detailMessageTime, messageNowDay, nowDay } = require('../../helpers/date-helper')
+const { messageTime } = require('../../helpers/date-helper')
 const crypto = require('crypto')
 
 module.exports = (io, socket) => {
@@ -23,20 +23,10 @@ module.exports = (io, socket) => {
       ])
 
       //  message時間轉換
-      const newPrivateMessage = privateMessage[1].map(message => {
-        switch (messageNowDay(message.createdAt)) {
-          case nowDay():
-            return {
-              ...message,
-              createdAt: simplifyMessageTime(message.createdAt)
-            }
-          default:
-            return {
-              ...message,
-              createdAt: detailMessageTime(message.createdAt)
-            }
-        }
-      })
+      const newPrivateMessage = privateMessage[1].map(message => ({
+        ...message,
+        createdAt: messageTime(message.createdAt)
+      }))
 
       socket.emit('joinRoom', newPrivateMessage)
     } catch (err) {
@@ -59,7 +49,13 @@ module.exports = (io, socket) => {
       const postPrivateMessage = await messageController.postPrivateMessage(senderId, receiverId, content)
       const receiverUnreadMessage = await messageController.getAllUnreadPrivateMessage(receiverId)
 
-      io.in(roomId).emit('receiveMessage', postPrivateMessage)
+      //  message時間轉換
+      const newPostPrivateMessage = {
+        ...postPrivateMessage.toJSON(),
+        createdAt: messageTime(postPrivateMessage.createdAt)
+      }
+
+      io.in(roomId).emit('receiveMessage', newPostPrivateMessage)
 
       //  寄送所有私人訊息未讀通知
       io.in(receiverId).emit('privateMessageNotify', { unreadMessage: receiverUnreadMessage })
