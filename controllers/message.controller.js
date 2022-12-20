@@ -45,7 +45,7 @@ const messageController = {
   },
   putPrivateMessageStatus: async (senderId, receiverId) => {
     await PrivateChat.update(
-      { isRead: false },
+      { isRead: true },
       {
         where: {
           senderId: receiverId,
