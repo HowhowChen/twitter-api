@@ -4,7 +4,7 @@ const crypto = require('crypto')
 
 module.exports = (io, socket) => {
   //  一進單人聊天室就讀取歷史訊息及加入roomId
-  socket.on('getPrivateMessage', async data => {
+  socket.on('joinRoom', async data => {
     try {
       const { receiverId, account } = data
       const senderId = socket.user.id
@@ -38,14 +38,14 @@ module.exports = (io, socket) => {
         }
       })
 
-      socket.emit('getPrivateMessage', newPrivateMessage)
+      socket.emit('joinRoom', newPrivateMessage)
     } catch (err) {
       socket.on('error', err)
     }
   })
 
   //  點擊送出訊息，存進資料庫，回傳新增訊息給前端appendChild
-  socket.on('postPrivateMessage', async data => {
+  socket.on('sendMessage', async data => {
     try {
       const { receiverId, account, content } = data
       const senderId = socket.user.id
@@ -57,9 +57,12 @@ module.exports = (io, socket) => {
       const roomId = crypto.createHash('md5').update(name[0] + name[1]).digest('hex')
 
       const postPrivateMessage = await messageController.postPrivateMessage(senderId, receiverId, content)
+      const receiverUnreadMessage = await messageController.getAllUnreadPrivateMessage(receiverId)
 
-      io.in(roomId).emit('postPrivateMessage', postPrivateMessage)
-      io.emit('privateMessageNotify', 'ture')
+      io.in(roomId).emit('receiveMessage', postPrivateMessage)
+
+      //  寄送所有私人訊息未讀通知
+      io.in(receiverId).emit('privateMessageNotify', { unreadMessage: receiverUnreadMessage })
     } catch (err) {
       socket.on('error', err)
     }

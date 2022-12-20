@@ -9,6 +9,9 @@ module.exports = io => {
     console.log(
       ` ${user.name} connected and number of connections ${clientsCount}`
     )
+
+    //  加入id，用於接收私人訊息未讀通知
+    socket.join(socket.user.id)
     privateRoom(io, socket)
   })
 }

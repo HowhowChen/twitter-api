@@ -90,6 +90,14 @@ const messageController = {
       nest: true,
       order: [['id', 'DESC']]
     })
+  },
+  getAllUnreadPrivateMessage: async receiverId => {
+    return await PrivateChat.count({
+      where: {
+        isRead: false,
+        receiverId
+      }
+    })
   }
 }
 
