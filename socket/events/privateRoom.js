@@ -1,5 +1,5 @@
 const messageController = require('../../controllers/message.controller')
-const { messageTime } = require('../../helpers/date-helper')
+const { messageTime, messageListTime } = require('../../helpers/date-helper')
 const crypto = require('crypto')
 
 module.exports = (io, socket) => {
@@ -75,7 +75,13 @@ module.exports = (io, socket) => {
         await messageController.getPrivateUnreadMessageCount(senderId, receiverId.receiverId)
       )))
 
-      socket.emit('privateMessageList', privateMessageList)
+      //  message時間轉換
+      const newPrivateMessageList = privateMessageList.map(message => ({
+        ...message,
+        createdAt: messageListTime(message.createdAt)
+      }))
+
+      socket.emit('privateMessageList', newPrivateMessageList)
     } catch (err) {
       socket.on('error', err)
     }
