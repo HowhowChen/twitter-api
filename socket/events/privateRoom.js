@@ -89,12 +89,28 @@ module.exports = (io, socket) => {
 
   //  離開聊天室，斷開socket房間連線
   socket.on('leaveRoom', async data => {
-    // 建立rooId，做雜湊確保roomId不重複
-    const { account } = data
-    const senderAccount = socket.user.account
-    const name = [account, senderAccount]
-    name.sort()
-    const roomId = crypto.createHash('md5').update(name[0] + name[1]).digest('hex')
-    socket.leave(roomId)
+    try {
+      // 建立rooId，做雜湊確保roomId不重複
+      const { account } = data
+      const senderAccount = socket.user.account
+      const name = [account, senderAccount]
+      name.sort()
+      const roomId = crypto.createHash('md5').update(name[0] + name[1]).digest('hex')
+      socket.leave(roomId)
+    } catch (err) {
+      socket.on('error', err)
+    }
+  })
+
+  //  定期傳送未讀訊息總數(上線的這位使用者)
+  socket.on('privateMessageNotify', async data => {
+    try {
+      const { id } = socket.user
+      const receiverUnreadMessage = await messageController.getAllUnreadPrivateMessage(id)
+      //  寄送所有私人訊息未讀通知
+      io.in(id).emit('privateMessageNotify', { unreadMessage: receiverUnreadMessage })
+    } catch (err) {
+      socket.on('error', err)
+    }
   })
 }
