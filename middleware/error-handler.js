@@ -12,5 +12,18 @@ module.exports = {
       })
     }
     next()
+  },
+  socketErrorHandler (err, socket) {
+    if (err instanceof Error) {
+      socket.emit('error', {
+        status: 'error',
+        message: `${err.name}: ${err.message}`
+      })
+    } else {
+      socket.emit('error', {
+        status: 'error',
+        message: `${err}`
+      })
+    }
   }
 }

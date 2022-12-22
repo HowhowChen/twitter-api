@@ -1,5 +1,6 @@
 const messageController = require('../../controllers/message.controller')
 const { messageTime, messageListTime } = require('../../helpers/date-helper')
+const { socketErrorHandler } = require('../../middleware/error-handler')
 const crypto = require('crypto')
 
 module.exports = (io, socket) => {
@@ -22,15 +23,18 @@ module.exports = (io, socket) => {
         messageController.getPrivateMessages(senderId, receiverId)
       ])
 
+      if (privateMessage[1].length === 0) throw new Error('使用者不存在!')
+
       //  message時間轉換
       const newPrivateMessage = privateMessage[1].map(message => ({
         ...message,
         createdAt: messageTime(message.createdAt)
       }))
 
+      //  傳送聊天歷史訊息
       socket.emit('joinRoom', newPrivateMessage)
     } catch (err) {
-      socket.on('error', err)
+      socketErrorHandler(err, socket)
     }
   })
 
@@ -55,12 +59,13 @@ module.exports = (io, socket) => {
         createdAt: messageTime(postPrivateMessage.createdAt)
       }
 
+      //  將儲存至資料庫後的訊息，傳送給sender與receiver
       io.in(roomId).emit('receiveMessage', newPostPrivateMessage)
 
-      //  寄送所有私人訊息未讀通知
+      //  傳送所有私人訊息未讀通知
       io.in(receiverId).emit('privateMessageNotify', { unreadMessage: receiverUnreadMessage })
     } catch (err) {
-      socket.on('error', err)
+      socketErrorHandler(err, socket)
     }
   })
 
@@ -81,9 +86,10 @@ module.exports = (io, socket) => {
         createdAt: messageListTime(message.createdAt)
       }))
 
+      //  傳送聊天列表
       socket.emit('privateMessageList', newPrivateMessageList)
     } catch (err) {
-      socket.on('error', err)
+      socketErrorHandler(err, socket)
     }
   })
 
@@ -96,9 +102,11 @@ module.exports = (io, socket) => {
       const name = [account, senderAccount]
       name.sort()
       const roomId = crypto.createHash('md5').update(name[0] + name[1]).digest('hex')
+
+      //  斷開socket房間連線
       socket.leave(roomId)
     } catch (err) {
-      socket.on('error', err)
+      socketErrorHandler(err, socket)
     }
   })
 
@@ -107,10 +115,11 @@ module.exports = (io, socket) => {
     try {
       const { id } = socket.user
       const receiverUnreadMessage = await messageController.getAllUnreadPrivateMessage(id)
-      //  寄送所有私人訊息未讀通知
+
+      //  傳送所有私人訊息未讀通知
       io.in(id).emit('privateMessageNotify', { unreadMessage: receiverUnreadMessage })
     } catch (err) {
-      socket.on('error', err)
+      socketErrorHandler(err, socket)
     }
   })
 }
