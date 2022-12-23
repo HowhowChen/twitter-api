@@ -1,4 +1,4 @@
-const { Tweet, User, Reply, Like, Subscribe, NewTweetNotice, LikeNotice, sequelize } = require('../models')
+const { Tweet, User, Reply, Like, Subscribe, NewTweetNotice, LikeNotice, ReplyNotice, sequelize } = require('../models')
 const helpers = require('../_helpers')
 const { relativeTime } = require('../helpers/date-helper')
 
@@ -161,11 +161,23 @@ const tweetController = {
           message: '回覆不可空白！'
         })
       }
-      await Reply.create({
-        UserId,
-        TweetId,
-        comment
-      })
+
+      //  建立回覆與回覆通知
+      await Promise.all([
+        Reply.create({
+          UserId,
+          TweetId,
+          comment
+        }),
+        ReplyNotice.create({
+          UserId: tweet.toJSON().UserId, //  推文作者
+          TweetId,
+          url: `${process.env.BASE_URL}/api/tweets/${TweetId}`,
+          title: '你的貼文有新的回覆',
+          isRead: false
+        })
+      ])
+
       return res.status(200).json({ status: 'success' })
     } catch (err) {
       next(err)
