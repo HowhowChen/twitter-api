@@ -1,4 +1,4 @@
-const { PrivateChat, sequelize } = require('../models')
+const { Tweet, PrivateChat, NewTweetNotice, LikeNotice, ReplyNotice, FollowNotice, sequelize } = require('../models')
 const { Op } = require('sequelize')
 
 const messageController = {
@@ -98,6 +98,47 @@ const messageController = {
         receiverId
       }
     })
+  },
+  getAllNotices: async currentUserId => {
+    return await Promise.all([
+      NewTweetNotice.findAll({
+        include: { model: Tweet, attributes: ['description'] },
+        where: {
+          SubscribeId: {
+            [Op.in]: sequelize.literal(
+              `(
+                SELECT id FROM Subscribes
+                WHERE subscriberId = ${currentUserId}
+              )`
+            )
+          }
+        },
+        raw: true,
+        nest: true
+      }),
+      LikeNotice.findAll({
+        where: {
+          UserId: currentUserId
+        },
+        raw: true,
+        nest: true
+      }),
+      ReplyNotice.findAll({
+        include: { model: Tweet, attributes: ['description'] },
+        where: {
+          UserId: currentUserId
+        },
+        raw: true,
+        nest: true
+      }),
+      FollowNotice.findAll({
+        where: {
+          FollowingId: currentUserId
+        },
+        raw: true,
+        nest: true
+      })
+    ])
   }
 }
 
