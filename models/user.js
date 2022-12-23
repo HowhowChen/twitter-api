@@ -9,6 +9,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Like, { foreignKey: 'UserId' })
       User.hasMany(models.UserRoom, { foreignKey: 'UserId' })
       User.hasMany(models.GroupChat, { foreignKey: 'UserId' })
+      User.hasMany(models.LikeNotice, { foreignKey: 'UserId' })
+      User.hasMany(models.ReplyNotice, { foreignKey: 'UserId' })
       User.belongsToMany(models.User, {
         through: models.Followship,
         foreignKey: 'followingId',
@@ -28,6 +30,26 @@ module.exports = (sequelize, DataTypes) => {
         through: models.PrivateChat,
         foreignKey: 'receiverId',
         as: 'Senders'
+      })
+      User.belongsToMany(models.User, {
+        through: models.Subscribe,
+        foreignKey: 'subscribingId',
+        as: 'Subscribers'
+      })
+      User.belongsToMany(models.User, {
+        through: models.Subscribe,
+        foreignKey: 'subscriberId',
+        as: 'Subscribings'
+      })
+      User.belongsToMany(models.User, {
+        through: models.FollowNotice,
+        foreignKey: 'followingId',
+        as: 'Followers'
+      })
+      User.belongsToMany(models.User, {
+        through: models.FollowNotice,
+        foreignKey: 'followerId',
+        as: 'Followings'
       })
     }
   }
