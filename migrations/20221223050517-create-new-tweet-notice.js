@@ -22,7 +22,8 @@ module.exports = {
         type: Sequelize.STRING
       },
       isRead: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       createdAt: {
         allowNull: false,
