@@ -1,4 +1,4 @@
-const { Tweet, User, Reply, Like, Subscribe, NewTweetNotice, sequelize } = require('../models')
+const { Tweet, User, Reply, Like, Subscribe, NewTweetNotice, LikeNotice, sequelize } = require('../models')
 const helpers = require('../_helpers')
 const { relativeTime } = require('../helpers/date-helper')
 
@@ -174,6 +174,7 @@ const tweetController = {
   likeTweet: async (req, res, next) => {
     try {
       const UserId = helpers.getUser(req).id
+      const { name } = helpers.getUser(req)
       const TweetId = req.params.id
       const tweet = await Tweet.findByPk(TweetId)
       if (!tweet) {
@@ -185,12 +186,23 @@ const tweetController = {
       const like = await Like.findOrCreate({
         where: { UserId, TweetId }
       })
+
       if (!like[1]) {
         return res.status(422).json({
           status: 'error',
           message: '已表示喜歡'
         })
       }
+
+      //  建立喜歡貼文通知
+      await LikeNotice.create({
+        UserId: tweet.toJSON().UserId, //  推文作者
+        TweetId,
+        url: `${process.env.BASE_URL}/api/tweets/${TweetId}`,
+        title: `${name}喜歡你的貼文`,
+        isRead: false
+      })
+
       return res.status(200).json({ status: 'success' })
     } catch (err) {
       next(err)
