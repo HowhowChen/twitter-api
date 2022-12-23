@@ -2,22 +2,22 @@
 const { Model } = require('sequelize')
 
 module.exports = (sequelize, DataTypes) => {
-  class Suscribe extends Model {
+  class Subscribe extends Model {
     static associate (models) {
-      Suscribe.belongsTo(models.User, { foreignKey: 'suscriberId', as: 'Suscribers' })
-      Suscribe.belongsTo(models.User, { foreignKey: 'suscribingId', as: 'Suscribings' })
+      Subscribe.belongsTo(models.User, { foreignKey: 'subscriberId', as: 'Subscribers' })
+      Subscribe.belongsTo(models.User, { foreignKey: 'subscribingId', as: 'Subscribings' })
     }
   }
-  Suscribe.init(
+  Subscribe.init(
     {
-      suscriberId: DataTypes.INTEGER,
-      suscribingId: DataTypes.INTEGER
+      subscriberId: DataTypes.INTEGER,
+      subscribingId: DataTypes.INTEGER
     },
     {
       sequelize,
-      modelName: 'Suscribe',
-      tableName: 'Suscribe'
+      modelName: 'Subscribe',
+      tableName: 'Subscribes'
     }
   )
-  return Suscribe
+  return Subscribe
 }
