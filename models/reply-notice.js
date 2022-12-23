@@ -5,13 +5,13 @@ module.exports = (sequelize, DataTypes) => {
   class ReplyNotice extends Model {
     static associate (models) {
       ReplyNotice.belongsTo(models.User, { foreignKey: 'UserId' })
-      ReplyNotice.hasOne(models.Reply, { foreignKey: 'ReplyId' })
+      ReplyNotice.belongsTo(models.Tweet, { foreignKey: 'TweetId' })
     }
   }
   ReplyNotice.init(
     {
       UserId: DataTypes.INTEGER,
-      ReplyId: DataTypes.INTEGER,
+      TweetId: DataTypes.INTEGER,
       url: DataTypes.STRING,
       title: DataTypes.STRING,
       isRead: DataTypes.BOOLEAN

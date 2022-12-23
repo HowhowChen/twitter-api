@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate (models) {
       FollowShip.belongsTo(models.User, { foreignKey: 'followerId', as: 'Followers' })
       FollowShip.belongsTo(models.User, { foreignKey: 'followingId', as: 'Followings' })
+      FollowShip.hasOne(models.FollowNotice, { foreignKey: 'FollowshipId' })
     }
   }
   FollowShip.init(
