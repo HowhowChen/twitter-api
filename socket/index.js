@@ -1,4 +1,6 @@
 const { authenticatedSocket } = require('../middleware/authentication')
+const privateRoom = require('./events/privateRoom')
+const notice = require('./events/notice')
 
 module.exports = io => {
   /* 監聽連線狀態 */
@@ -8,5 +10,10 @@ module.exports = io => {
     console.log(
       ` ${user.name} connected and number of connections ${clientsCount}`
     )
+
+    //  加入id，用於接收私人訊息未讀通知
+    socket.join(socket.user.id)
+    privateRoom(io, socket)
+    notice(io, socket)
   })
 }

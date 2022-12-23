@@ -1,4 +1,4 @@
-const { Tweet, User, Reply, Like, sequelize } = require('../models')
+const { Tweet, User, Reply, Like, Subscribe, NewTweetNotice, LikeNotice, ReplyNotice, sequelize } = require('../models')
 const helpers = require('../_helpers')
 const { relativeTime } = require('../helpers/date-helper')
 
@@ -66,6 +66,7 @@ const tweetController = {
   postTweet: async (req, res, next) => {
     try {
       const UserId = helpers.getUser(req).id
+      const { name } = helpers.getUser(req)
       const description = req.body.description.trim()
       if (!description) {
         return res.status(422).json({
@@ -79,10 +80,35 @@ const tweetController = {
           message: '字數超出上限！'
         })
       }
-      await Tweet.create({
-        UserId,
-        description
-      })
+
+      //  新增推文與找自己的粉絲
+      const [tweet, subscribers] = await Promise.all([
+        Tweet.create({
+          UserId,
+          description
+        }),
+        Subscribe.findAll({
+          attributes: ['id'],
+          where: { subscribingId: UserId },
+          raw: true,
+          nest: true
+        })
+      ])
+
+      //  如果有粉絲
+      if (subscribers.length !== 0) {
+        const TweetId = tweet.toJSON().id
+        await Promise.all(subscribers.map(subscriber => {
+          return NewTweetNotice.create({
+            SubscribeId: subscriber.id,
+            TweetId,
+            url: `${process.env.BASE_URL}/api/tweets/${TweetId}`,
+            title: `${name}有新的推文通知`,
+            isRead: false
+          })
+        }))
+      }
+
       return res.status(200).json({ status: 'success' })
     } catch (err) {
       next(err)
@@ -135,11 +161,23 @@ const tweetController = {
           message: '回覆不可空白！'
         })
       }
-      await Reply.create({
-        UserId,
-        TweetId,
-        comment
-      })
+
+      //  建立回覆與回覆通知
+      await Promise.all([
+        Reply.create({
+          UserId,
+          TweetId,
+          comment
+        }),
+        ReplyNotice.create({
+          UserId: tweet.toJSON().UserId, //  推文作者
+          TweetId,
+          url: `${process.env.BASE_URL}/api/tweets/${TweetId}`,
+          title: '你的貼文有新的回覆',
+          isRead: false
+        })
+      ])
+
       return res.status(200).json({ status: 'success' })
     } catch (err) {
       next(err)
@@ -148,6 +186,7 @@ const tweetController = {
   likeTweet: async (req, res, next) => {
     try {
       const UserId = helpers.getUser(req).id
+      const { name } = helpers.getUser(req)
       const TweetId = req.params.id
       const tweet = await Tweet.findByPk(TweetId)
       if (!tweet) {
@@ -159,12 +198,23 @@ const tweetController = {
       const like = await Like.findOrCreate({
         where: { UserId, TweetId }
       })
+
       if (!like[1]) {
         return res.status(422).json({
           status: 'error',
           message: '已表示喜歡'
         })
       }
+
+      //  建立喜歡貼文通知
+      await LikeNotice.create({
+        UserId: tweet.toJSON().UserId, //  推文作者
+        TweetId,
+        url: `${process.env.BASE_URL}/api/tweets/${TweetId}`,
+        title: `${name}喜歡你的貼文`,
+        isRead: false
+      })
+
       return res.status(200).json({ status: 'success' })
     } catch (err) {
       next(err)

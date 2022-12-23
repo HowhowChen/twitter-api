@@ -1,4 +1,4 @@
-const { Followship, User, sequelize } = require('../models')
+const { Followship, User, FollowNotice, sequelize } = require('../models')
 const helpers = require('../_helpers')
 
 const followshipController = {
@@ -21,6 +21,7 @@ const followshipController = {
   addFollowing: async (req, res, next) => {
     try {
       const currentUserId = helpers.getUser(req).id
+      const { name } = helpers.getUser(req)
       const followingId = Number(req.body.id)
 
       if (followingId === currentUserId) {
@@ -51,10 +52,20 @@ const followshipController = {
       // 確認是否已經按過追蹤
       if (followship) throw new Error('你已經追蹤過了!')
 
-      await Followship.create({
-        followerId: currentUserId,
-        followingId
-      })
+      // 建立追蹤與追蹤通知
+      await Promise.all([
+        Followship.create({
+          followerId: currentUserId,
+          followingId
+        }),
+        FollowNotice.create({
+          followerId: currentUserId,
+          followingId,
+          url: `${process.env.BASE_URL}/api/users/${currentUserId}`,
+          title: `${name}開始追蹤你`,
+          isRead: false
+        })
+      ])
 
       res.status(200).json({
         status: 'success'

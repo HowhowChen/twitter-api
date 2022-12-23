@@ -4,6 +4,7 @@ const user = require('./modules/user')
 const admin = require('./modules/admin')
 const tweet = require('./modules/tweet')
 const followship = require('./modules/followship')
+const subscribe = require('./modules/subscribe')
 const passport = require('../config/passport')
 const userController = require('../controllers/user-controller')
 
@@ -22,6 +23,7 @@ router.use('/api/users', authenticated, authenticatedUser, user)
 router.use('/api/admin', authenticated, authenticatedAdmin, admin)
 router.use('/api/tweets', authenticated, authenticatedUser, tweet)
 router.use('/api/followships', authenticated, authenticatedUser, followship)
+router.use('/api/subscribes', authenticated, authenticatedUser, subscribe)
 
 // not found router
 router.use('/', (_, res, next) => {
