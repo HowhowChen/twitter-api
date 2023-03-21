@@ -151,9 +151,9 @@ const userController = {
       const user = await User.findByPk(reqUserId, {
         attributes: [
           'id', 'account', 'name', 'avatar', 'cover', 'introduction', 'role',
-          [sequelize.literal('(SELECT COUNT(*) FROM Followships WHERE followingId = User.id)'), 'followerCount'],
-          [sequelize.literal('(SELECT COUNT(*) FROM Followships WHERE followerId = User.id)'), 'followingCount'],
-          [sequelize.literal('(SELECT COUNT(*) FROM Tweets WHERE UserId = User.id )'), 'tweetCount']
+          [sequelize.literal('(SELECT COUNT(*) FROM "Followships" WHERE "followingId" = "User"."id")'), 'followerCount'],
+          [sequelize.literal('(SELECT COUNT(*) FROM "Followships" WHERE "followerId" = "User"."id")'), 'followingCount'],
+          [sequelize.literal('(SELECT COUNT(*) FROM "Tweets" WHERE "UserId" = "User"."id" )'), 'tweetCount']
         ]
       })
 
@@ -208,9 +208,9 @@ const userController = {
           include: { model: User, attributes: ['id', 'name', 'account', 'avatar'] },
           attributes: [
             'id', 'description', 'createdAt',
-            [sequelize.literal('(SELECT COUNT(*) FROM Replies WHERE Replies.TweetId = Tweet.id)'), 'replyCount'],
-            [sequelize.literal('(SELECT COUNT(*) FROM Likes WHERE Likes.TweetId = Tweet.id)'), 'likeCount'],
-            [sequelize.literal(`EXISTS(SELECT id FROM Likes WHERE Likes.UserId = ${currentUserId} AND Likes.TweetId = Tweet.id)`), 'isLiked']
+            [sequelize.literal('(SELECT COUNT(*) FROM "Replies" WHERE "Replies"."TweetId" = "Tweet"."id")'), 'replyCount'],
+            [sequelize.literal('(SELECT COUNT(*) FROM "Likes" WHERE "Likes"."TweetId" = "Tweet"."id")'), 'likeCount'],
+            [sequelize.literal(`EXISTS(SELECT "id" FROM "Likes" WHERE "Likes"."UserId" = ${currentUserId} AND "Likes"."TweetId" = "Tweet"."id")`), 'isLiked']
           ],
           order: [['createdAt', 'DESC']],
           // limit,
@@ -307,9 +307,9 @@ const userController = {
               model: Tweet,
               attributes: [
                 'id', 'description', 'createdAt',
-                [sequelize.literal('(SELECT COUNT(*) FROM Replies WHERE Replies.TweetId = Tweet.id)'), 'replyCount'],
-                [sequelize.literal('(SELECT COUNT(*) FROM Likes WHERE Likes.TweetId = Tweet.id)'), 'likeCount'],
-                [sequelize.literal(`EXISTS(SELECT id FROM Likes WHERE Likes.UserId = ${currentUserId} AND Likes.TweetId = Tweet.id)`), 'isLiked']
+                [sequelize.literal('(SELECT COUNT(*) FROM "Replies" WHERE "Replies"."TweetId" = "Tweet"."id")'), 'replyCount'],
+                [sequelize.literal('(SELECT COUNT(*) FROM "Likes" WHERE "Likes"."TweetId" = "Tweet"."id")'), 'likeCount'],
+                [sequelize.literal(`EXISTS(SELECT "id" FROM "Likes" WHERE "Likes"."UserId" = ${currentUserId} AND "Likes"."TweetId" = "Tweet"."id")`), 'isLiked']
               ],
               include: { model: User, attributes: ['id', 'name', 'account', 'avatar'] }
             }
@@ -366,7 +366,7 @@ const userController = {
               'name',
               'avatar',
               'introduction',
-              [sequelize.literal(`EXISTS(SELECT id FROM Followships WHERE Followships.followerId = ${currentUserId} AND Followships.followingId = Followings.id)`), 'isFollowed']
+              [sequelize.literal(`EXISTS(SELECT "id" FROM "Followships" WHERE "Followships"."followerId" = ${currentUserId} AND "Followships"."followingId" = "Followings"."id")`), 'isFollowed']
             ]
           },
           order: [['createdAt', 'DESC']],
@@ -412,7 +412,7 @@ const userController = {
               'name',
               'avatar',
               'introduction',
-              [sequelize.literal(`EXISTS(SELECT id FROM Followships WHERE Followships.followerId = ${currentUserId} AND Followships.followingId = Followers.id)`), 'isFollowed']
+              [sequelize.literal(`EXISTS(SELECT "id" FROM "Followships" WHERE "Followships"."followerId" = ${currentUserId} AND "Followships"."followingId" = "Followers"."id")`), 'isFollowed']
             ]
           },
           order: [['createdAt', 'DESC']],

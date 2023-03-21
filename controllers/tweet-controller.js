@@ -23,9 +23,9 @@ const tweetController = {
           'id',
           'createdAt',
           'description',
-          [sequelize.literal('(SELECT COUNT(id) FROM Replies WHERE Replies.TweetId = Tweet.id)'), 'replyCount'],
-          [sequelize.literal('(SELECT COUNT(id) FROM Likes WHERE Likes.TweetId = Tweet.id)'), 'likeCount'],
-          [sequelize.literal(`EXISTS (SELECT id FROM Likes WHERE Likes.UserId = ${currentUserId} AND Likes.TweetId = Tweet.id)`), 'isLiked']
+          [sequelize.literal('(SELECT COUNT("id") FROM "Replies" WHERE "Replies"."TweetId" = "Tweet"."id")'), 'replyCount'],
+          [sequelize.literal('(SELECT COUNT("id") FROM "Likes" WHERE "Likes"."TweetId" = "Tweet"."id")'), 'likeCount'],
+          [sequelize.literal(`EXISTS (SELECT "id" FROM "Likes" WHERE "Likes"."UserId" = ${currentUserId} AND "Likes"."TweetId" = "Tweet"."id")`), 'isLiked']
         ],
         order: [['createdAt', 'DESC']]
         // limit,
@@ -52,9 +52,9 @@ const tweetController = {
           'id',
           'createdAt',
           'description',
-          [sequelize.literal('(SELECT COUNT(id) FROM Replies WHERE Replies.TweetId = Tweet.id)'), 'replyCount'],
-          [sequelize.literal('(SELECT COUNT(id) FROM Likes WHERE Likes.TweetId = Tweet.id)'), 'likeCount'],
-          [sequelize.literal(`EXISTS (SELECT id FROM Likes WHERE Likes.UserId = ${currentUserId} AND Likes.TweetId = Tweet.id)`), 'isLiked']
+          [sequelize.literal('(SELECT COUNT("id") FROM "Replies" WHERE "Replies"."TweetId" = "Tweet"."id")'), 'replyCount'],
+          [sequelize.literal('(SELECT COUNT("id") FROM "Likes" WHERE "Likes"."TweetId" = "Tweet"."id")'), 'likeCount'],
+          [sequelize.literal(`EXISTS (SELECT "id" FROM "Likes" WHERE "Likes"."UserId" = ${currentUserId} AND "Likes"."TweetId" = "Tweet"."id")`), 'isLiked']
         ]
       })
       if (!tweet) {

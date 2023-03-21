@@ -8,7 +8,7 @@ const followshipController = {
       const users = await User.findAll({
         attributes: [
           'id', 'name', 'account', 'avatar',
-          [sequelize.literal('(SELECT COUNT(*) FROM Followships WHERE followingId = User.id)'), 'followerCount']
+          [sequelize.literal('(SELECT COUNT(*) FROM "Followships" WHERE "followingId" = "User"."id")'), 'followerCount']
         ],
         where: {
           id: {
@@ -18,7 +18,7 @@ const followshipController = {
             [Op.not]: 'admin'
           }
         },
-        order: [[sequelize.literal('followerCount'), 'DESC']],
+        order: [[sequelize.literal('"followerCount"'), 'DESC']],
         raw: true,
         nest: true
       })

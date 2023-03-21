@@ -4,9 +4,13 @@ const { FOLLOWSHIP_AMOUNT } = require('../helpers/seeder-helper')
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const users = await queryInterface.sequelize.query(
-      'SELECT `id` FROM `Users` WHERE `role` = "user";',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
+      'SELECT "id" FROM "Users" WHERE role = $1;',
+      {
+        type: queryInterface.sequelize.QueryTypes.SELECT,
+        bind: ['user']
+      }
     )
+
     const followships = []
     do {
       let followerId
@@ -20,6 +24,7 @@ module.exports = {
       )
       followships.push([followerId, followingId])
     } while (followships.length < FOLLOWSHIP_AMOUNT)
+
     await queryInterface.bulkInsert('Followships',
       Array.from({ length: FOLLOWSHIP_AMOUNT }, (_, i) => {
         return ({

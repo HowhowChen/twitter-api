@@ -6,13 +6,17 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     const replies = []
     const users = await queryInterface.sequelize.query(
-      'SELECT `id` FROM `Users` WHERE `role` = "user";',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
+      'SELECT "id" FROM "Users" WHERE role = $1;',
+      {
+        type: queryInterface.sequelize.QueryTypes.SELECT,
+        bind: ['user']
+      }
     )
     const tweets = await queryInterface.sequelize.query(
-      'SELECT `id`, `UserId` FROM `Tweets`;',
+      'SELECT "id", "UserId" FROM "Tweets";',
       { type: queryInterface.sequelize.QueryTypes.SELECT }
     )
+
     tweets.forEach(tweet => {
       const userIdArr = []
       let UserId

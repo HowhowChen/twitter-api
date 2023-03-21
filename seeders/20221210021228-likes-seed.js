@@ -4,13 +4,17 @@ const { LIKE_AMOUNT } = require('../helpers/seeder-helper')
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const users = await queryInterface.sequelize.query(
-      'SELECT `id` FROM `Users` WHERE `role` = "user";',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
+      'SELECT "id" FROM "Users" WHERE role = $1;',
+      {
+        type: queryInterface.sequelize.QueryTypes.SELECT,
+        bind: ['user']
+      }
     )
     const tweets = await queryInterface.sequelize.query(
-      'SELECT `id`, `UserId` FROM `Tweets`;',
+      'SELECT "id", "UserId" FROM "Tweets";',
       { type: queryInterface.sequelize.QueryTypes.SELECT }
     )
+
     const likes = []
     do {
       let UserId
@@ -21,6 +25,7 @@ module.exports = {
       } while (likes.join('、').includes(`${UserId},${TweetId}`))
       likes.push([UserId, TweetId])
     } while (likes.length < LIKE_AMOUNT)
+
     await queryInterface.bulkInsert('Likes',
       Array.from({ length: LIKE_AMOUNT }, (_, i) => {
         return ({
